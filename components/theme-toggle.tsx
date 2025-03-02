@@ -2,9 +2,19 @@
 
 import { useTheme } from "@/lib/theme-provider";
 import { Moon, Sun } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return <div className="w-5 h-5" />;
+  }
 
   return (
     <button
