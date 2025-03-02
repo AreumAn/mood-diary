@@ -39,7 +39,7 @@ This project was developed through the following process:
 
 ```bash
 # Clone repository
-git clone https://github.com/your-username/mood-diary.git
+git clone git@github.com:AreumAn/mood-diary.git
 cd mood-diary
 
 # Install dependencies
@@ -116,7 +116,7 @@ MoodDiary는 사용자가 일기를 작성하고, AI가 자동으로 감정을 �
 
 ```bash
 # 저장소 클론
-git clone https://github.com/your-username/mood-diary.git
+git clone git@github.com:AreumAn/mood-diary.git
 cd mood-diary
 
 # 의존성 설치
