@@ -9,7 +9,7 @@ MoodDiary is an intuitive journaling service that allows users to write diary en
 
 ## Tech Stack
 
-- **Frontend**: Next.js 14 (App Router), TypeScript, TailwindCSS
+- **Frontend**: Next.js 15 (App Router), TypeScript, TailwindCSS
 - **UI Components**: ShadCN UI
 - **State Management**: React Context API
 - **Icons**: Lucide Icons
@@ -86,7 +86,7 @@ MoodDiary는 사용자가 일기를 작성하고, AI가 자동으로 감정을 �
 
 ## 기술 스택
 
-- **프론트엔드**: Next.js 14 (App Router), TypeScript, TailwindCSS
+- **프론트엔드**: Next.js 15 (App Router), TypeScript, TailwindCSS
 - **UI 컴포넌트**: ShadCN UI
 - **상태 관리**: React Context API
 - **아이콘**: Lucide Icons
