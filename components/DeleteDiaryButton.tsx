@@ -32,7 +32,7 @@ export function DeleteDiaryButton({ diaryId }: DeleteDiaryButtonProps) {
       setOpen(false)
       router.push("/")
     } catch (error) {
-      console.error("일기 삭제 중 오류 발생:", error)
+      console.error(`${t("errorDeleting", language)}:`, error)
       alert(t("errorDeleting", language))
     }
   }
@@ -40,29 +40,26 @@ export function DeleteDiaryButton({ diaryId }: DeleteDiaryButtonProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="destructive" size="sm" className="bg-red-500 hover:bg-red-600 text-white">
+        <Button variant="destructive" size="sm" className="bg-red-500 hover:bg-red-600 text-white cursor-pointer">
           <Trash2 className="h-4 w-4 mr-2" />
-          {t("delete", language)}
+          {t("deleteDiary", language)}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] bg-white dark:bg-slate-800">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold text-slate-900 dark:text-white">
-            {language === "ko" ? "일기 삭제" : "Delete Diary"}
-          </DialogTitle>
-          <DialogDescription className="text-slate-500 dark:text-slate-400">
             {t("deleteConfirm", language)}
-          </DialogDescription>
+          </DialogTitle>
         </DialogHeader>
         <DialogFooter className="mt-4">
           <Button
             variant="outline"
             onClick={() => setOpen(false)}
-            className="hover:bg-slate-100 dark:hover:bg-slate-700"
+            className="hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
           >
             {t("no", language)}
           </Button>
-          <Button variant="destructive" onClick={handleDelete} className="bg-red-500 hover:bg-red-600 text-white">
+          <Button variant="destructive" onClick={handleDelete} className="bg-red-500 hover:bg-red-600 text-white cursor-pointer">
             {t("yes", language)}
           </Button>
         </DialogFooter>

@@ -1,39 +1,37 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-
-type Language = "ko" | "en";
+import { Language } from "./translations";
 
 type LanguageContextType = {
   language: Language;
-  toggleLanguage: () => void;
+  setLanguage: (language: Language) => void;
 };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguage] = useState<Language>("en");
+  const [language, setLanguage] = useState<Language>("ko");
 
   // 초기 언어 설정 (클라이언트 사이드에서만 실행)
   useEffect(() => {
-    // 로컬 스토리지에서 언어 가져오기
+    // 로컬 스토리지에서 언어 설정 가져오기
     const storedLanguage = localStorage.getItem("language") as Language | null;
     
-    // 저장된 언어가 있으면 적용
-    if (storedLanguage) {
+    // 저장된 언어 설정이 있으면 적용
+    if (storedLanguage && (storedLanguage === "ko" || storedLanguage === "en")) {
       setLanguage(storedLanguage);
     }
   }, []);
 
-  // 언어 토글 함수
-  const toggleLanguage = () => {
-    const newLanguage = language === "ko" ? "en" : "ko";
+  // 언어 변경 함수
+  const handleSetLanguage = (newLanguage: Language) => {
     setLanguage(newLanguage);
     localStorage.setItem("language", newLanguage);
   };
 
   return (
-    <LanguageContext.Provider value={{ language, toggleLanguage }}>
+    <LanguageContext.Provider value={{ language, setLanguage: handleSetLanguage }}>
       {children}
     </LanguageContext.Provider>
   );

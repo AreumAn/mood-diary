@@ -31,7 +31,7 @@ export default function Home() {
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
         <h1 className="text-3xl font-bold text-indigo-600 dark:text-indigo-400 flex items-center">
           <BookOpen className="mr-2 h-8 w-8" />
-          {language === "ko" ? "MoodDiary" : "MoodDiary"}
+          {t("appName", language)}
         </h1>
         <Link href="/diary/new">
           <Button className="bg-indigo-600 hover:bg-indigo-700 text-white transition-colors duration-300">

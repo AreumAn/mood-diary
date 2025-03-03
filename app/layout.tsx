@@ -8,8 +8,8 @@ import { Navbar } from '@/components/navbar'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Mood Diary | 감정 일기장',
-  description: 'Write a diary and analyze your emotions | 일기를 작성하고 감정을 분석해보세요',
+  title: 'Mood Diary',
+  description: 'Write diaries and analyze your emotions',
 }
 
 export default function RootLayout({
@@ -18,7 +18,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="ko">
+    <html lang="en">
       <body className={inter.className}>
         <ThemeProvider>
           <LanguageProvider>
