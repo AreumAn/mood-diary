@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { analyzeEmotionLocally } from "@/lib/local-emotion";
 
 // 감정 분석 Server Action
-export async function analyzeEmotion(content: string): Promise<Emotion> {
+export async function analyzeEmotion(content: string, language: "ko" | "en" = "ko"): Promise<Emotion> {
   try {
     // API 라우트를 통해 감정 분석 요청
     const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/emotion-analysis`, {
@@ -13,7 +13,7 @@ export async function analyzeEmotion(content: string): Promise<Emotion> {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ content }),
+      body: JSON.stringify({ content, language }),
     });
     
     if (!response.ok) {
@@ -35,10 +35,10 @@ export async function saveDiaryWithEmotion(diary: {
   title: string;
   content: string;
   createdAt: string;
-}): Promise<{ success: boolean; diary?: DiaryEntry; error?: string }> {
+}, language: "ko" | "en" = "ko"): Promise<{ success: boolean; diary?: DiaryEntry; error?: string }> {
   try {
     // 감정 분석
-    const emotion = await analyzeEmotion(diary.content);
+    const emotion = await analyzeEmotion(diary.content, language);
     
     // 클라이언트에서 저장할 수 있도록 데이터 반환
     const diaryWithEmotion: DiaryEntry = {
@@ -53,9 +53,13 @@ export async function saveDiaryWithEmotion(diary: {
     return { success: true, diary: diaryWithEmotion };
   } catch (error) {
     console.error("일기 저장 중 오류 발생:", error);
+    const errorMessage = language === "ko" 
+      ? error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다."
+      : error instanceof Error ? error.message : "An unknown error occurred.";
+    
     return { 
       success: false, 
-      error: error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다." 
+      error: errorMessage
     };
   }
 } 

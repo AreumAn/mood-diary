@@ -12,9 +12,11 @@ import type { DiaryEntry } from "@/lib/types"
 import { saveDiary, updateDiary } from "@/lib/diary"
 import { saveDiaryWithEmotion } from "@/app/actions/diary"
 import { format } from "date-fns"
-import { ko } from "date-fns/locale"
+import { ko, enUS } from "date-fns/locale"
 import { CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useLanguage } from "@/lib/language-provider"
+import { t } from "@/lib/translations"
 
 interface DiaryFormProps {
   diary?: DiaryEntry
@@ -23,10 +25,21 @@ interface DiaryFormProps {
 
 export function DiaryForm({ diary, isEditing = false }: DiaryFormProps) {
   const router = useRouter()
+  const { language } = useLanguage()
   const [content, setContent] = useState(diary?.content || "")
   const [date, setDate] = useState<Date>(diary ? new Date(diary.createdAt) : new Date())
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // 날짜 형식 및 로케일 설정
+  const dateLocale = language === "ko" ? ko : enUS
+  const formatTitle = (date: Date) => {
+    if (language === "ko") {
+      return format(date, "yyyy년 MM월 dd일의 일기", { locale: ko })
+    } else {
+      return format(date, "'Diary for' MMMM d, yyyy", { locale: enUS })
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,7 +47,7 @@ export function DiaryForm({ diary, isEditing = false }: DiaryFormProps) {
     setError(null)
 
     try {
-      const title = format(date, "yyyy년 MM월 dd일의 일기", { locale: ko })
+      const title = formatTitle(date)
 
       if (isEditing && diary) {
         const result = await saveDiaryWithEmotion({
@@ -42,24 +55,24 @@ export function DiaryForm({ diary, isEditing = false }: DiaryFormProps) {
           title,
           content,
           createdAt: date.toISOString(),
-        })
+        }, language)
 
         if (result.success && result.diary) {
           updateDiary(result.diary)
         } else {
-          throw new Error(result.error || "일기 수정 중 오류가 발생했습니다.")
+          throw new Error(result.error || t("errorSaving", language))
         }
       } else {
         const result = await saveDiaryWithEmotion({
           title,
           content,
           createdAt: date.toISOString(),
-        })
+        }, language)
 
         if (result.success && result.diary) {
           saveDiary(result.diary)
         } else {
-          throw new Error(result.error || "일기 저장 중 오류가 발생했습니다.")
+          throw new Error(result.error || t("errorSaving", language))
         }
       }
 
@@ -67,7 +80,7 @@ export function DiaryForm({ diary, isEditing = false }: DiaryFormProps) {
       router.refresh()
     } catch (error) {
       console.error("일기 저장 중 오류 발생:", error)
-      setError(error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다.")
+      setError(error instanceof Error ? error.message : t("unknownError", language))
     } finally {
       setIsSubmitting(false)
     }
@@ -76,7 +89,7 @@ export function DiaryForm({ diary, isEditing = false }: DiaryFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6 bg-white dark:bg-slate-800 rounded-lg shadow-md p-6">
       <div className="space-y-2">
-        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">날짜 선택</label>
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">{t("date", language)}</label>
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -84,7 +97,7 @@ export function DiaryForm({ diary, isEditing = false }: DiaryFormProps) {
               className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {date ? format(date, "PPP", { locale: ko }) : <span>날짜 선택</span>}
+              {date ? format(date, "PPP", { locale: dateLocale }) : <span>{t("selectDate", language)}</span>}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0">
@@ -93,7 +106,7 @@ export function DiaryForm({ diary, isEditing = false }: DiaryFormProps) {
               selected={date}
               onSelect={(date) => date && setDate(date)}
               initialFocus
-              locale={ko}
+              locale={dateLocale}
             />
           </PopoverContent>
         </Popover>
@@ -101,11 +114,11 @@ export function DiaryForm({ diary, isEditing = false }: DiaryFormProps) {
 
       <div className="space-y-2">
         <label htmlFor="content" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-          일기 내용
+          {t("diaryContent", language)}
         </label>
         <Textarea
           id="content"
-          placeholder="오늘의 일기를 작성해보세요..."
+          placeholder={t("diaryPlaceholder", language)}
           value={content}
           onChange={(e) => setContent(e.target.value)}
           required
@@ -122,10 +135,10 @@ export function DiaryForm({ diary, isEditing = false }: DiaryFormProps) {
           onClick={() => router.back()}
           className="hover:bg-slate-100 dark:hover:bg-slate-700"
         >
-          취소
+          {t("cancel", language)}
         </Button>
         <Button type="submit" disabled={isSubmitting} className="bg-indigo-600 hover:bg-indigo-700 text-white">
-          {isSubmitting ? "분석 및 저장 중..." : isEditing ? "수정하기" : "저장하기"}
+          {isSubmitting ? t("saving", language) : isEditing ? t("edit", language) : t("save", language)}
         </Button>
       </div>
     </form>
