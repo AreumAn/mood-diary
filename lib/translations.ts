@@ -25,11 +25,11 @@ type TranslationKey =
 
 // 감정 번역
 export const emotionTranslations: Record<Emotion, { en: string; ko: string }> = {
-  "행복": { en: "Happy", ko: "행복" },
-  "슬픔": { en: "Sad", ko: "슬픔" },
-  "분노": { en: "Angry", ko: "분노" },
-  "평범": { en: "Neutral", ko: "평범" },
-  "신남": { en: "Excited", ko: "신남" }
+  "happy": { en: "Happy", ko: "행복" },
+  "sad": { en: "Sad", ko: "슬픔" },
+  "angry": { en: "Angry", ko: "분노" },
+  "neutral": { en: "Neutral", ko: "평범" },
+  "excited": { en: "Excited", ko: "신남" }
 };
 
 // 영어 번역

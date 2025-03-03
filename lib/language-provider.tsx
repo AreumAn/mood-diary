@@ -12,7 +12,7 @@ type LanguageContextType = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguage] = useState<Language>("ko");
+  const [language, setLanguage] = useState<Language>("en");
 
   // 초기 언어 설정 (클라이언트 사이드에서만 실행)
   useEffect(() => {

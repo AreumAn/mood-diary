@@ -1,11 +1,63 @@
-import { DiaryEntry } from "./types";
+import { DiaryEntry, Emotion, KoreanEmotion, emotionMapping } from "./types";
+
+const STORAGE_KEY = "diaries";
+
+// 감정 값 변환 함수
+const convertEmotion = (emotion: string | undefined): Emotion | undefined => {
+  if (!emotion) return undefined;
+  
+  // 이미 영어 감정 값인 경우
+  const validEmotions: Emotion[] = ["happy", "sad", "angry", "neutral", "excited"];
+  if (validEmotions.includes(emotion as Emotion)) {
+    return emotion as Emotion;
+  }
+  
+  // 한글 감정 값인 경우 변환
+  const koreanEmotions = ["행복", "슬픔", "분노", "평범", "신남"];
+  if (koreanEmotions.includes(emotion)) {
+    return emotionMapping[emotion as KoreanEmotion];
+  }
+  
+  return "neutral";
+};
+
+// 데이터 마이그레이션 함수
+const migrateEmotions = () => {
+  if (typeof window === "undefined") return;
+  
+  const storedDiaries = localStorage.getItem(STORAGE_KEY);
+  if (!storedDiaries) return;
+  
+  try {
+    const diaries: DiaryEntry[] = JSON.parse(storedDiaries);
+    const migratedDiaries = diaries.map(diary => ({
+      ...diary,
+      emotion: convertEmotion(diary.emotion)
+    }));
+    
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(migratedDiaries));
+    console.log("감정 데이터 마이그레이션 완료");
+  } catch (error) {
+    console.error("감정 데이터 마이그레이션 실패:", error);
+  }
+};
 
 // 로컬 스토리지에서 모든 일기 가져오기
 export function getAllDiaries(): DiaryEntry[] {
   if (typeof window === "undefined") return [];
   
-  const diaries = localStorage.getItem("diaries");
-  return diaries ? JSON.parse(diaries) : [];
+  // 데이터 마이그레이션 실행
+  migrateEmotions();
+  
+  const storedDiaries = localStorage.getItem(STORAGE_KEY);
+  if (!storedDiaries) return [];
+  
+  try {
+    return JSON.parse(storedDiaries);
+  } catch (error) {
+    console.error("일기 데이터 파싱 오류:", error);
+    return [];
+  }
 }
 
 // 특정 ID의 일기 가져오기
@@ -26,7 +78,7 @@ export function saveDiary(diary: Partial<DiaryEntry>): DiaryEntry {
     emotion: diary.emotion,
   };
   
-  localStorage.setItem("diaries", JSON.stringify([newDiary, ...diaries]));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([newDiary, ...diaries]));
   return newDiary;
 }
 
@@ -37,7 +89,7 @@ export function updateDiary(diary: DiaryEntry): DiaryEntry {
     d.id === diary.id ? diary : d
   );
   
-  localStorage.setItem("diaries", JSON.stringify(updatedDiaries));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedDiaries));
   return diary;
 }
 
@@ -46,5 +98,5 @@ export function deleteDiary(id: string): void {
   const diaries = getAllDiaries();
   const filteredDiaries = diaries.filter((diary) => diary.id !== id);
   
-  localStorage.setItem("diaries", JSON.stringify(filteredDiaries));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(filteredDiaries));
 } 

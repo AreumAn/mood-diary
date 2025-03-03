@@ -71,6 +71,14 @@
 -   **Theme Saving**: The selected theme is saved in local storage and persists even after page refresh.
 -   **System Settings Detection**: Automatically apply the user's system theme setting upon initial access.
 
+### E. Multilingual Support
+
+-   **Language Switching**: Provide a toggle switch to switch between English and Korean.
+-   **UI Translation**: All UI elements such as buttons, labels, and messages are displayed in the selected language.
+-   **Multilingual Emotion Analysis**: Emotion analysis is available in both English and Korean.
+-   **Language Setting Persistence**: The selected language setting is saved in local storage and persists even after page refresh.
+-   **Default Language**: The default language is set to English, and users can switch to Korean if desired.
+
 ## 4. Technology Stack
 
 ### Required Technology Stack
@@ -82,9 +90,9 @@
 ### Additional Technology Stack
 
 -   **TypeScript**: Ensuring stability through static type checking
--   **React Hooks and Context API**: State management and theme management
+-   **React Hooks and Context API**: State management and theme/language management
 -   **Google Gemini API**: Using the Gemini model for emotion analysis
--   **Local Storage**: Local storage of diary data and theme settings
+-   **Local Storage**: Local storage of diary data, theme settings, and language settings
 -   **Axios or Fetch API**: HTTP client for API calls
 -   **Lucide Icons**: Library for icon usage
     -   Compatible with ShadCN UI and provides various icons.
@@ -93,7 +101,7 @@
 
 -   **Sign-up and Login Functionality**: Add user authentication (email and password-based)
 -   **Database Integration**: Permanent data storage using Prisma and PostgreSQL
--   **Multilingual Support**: Expand to allow diary writing and emotion analysis in other languages like English
+-   **Additional Language Support**: Expand to include more languages such as Chinese, Japanese, etc.
 -   **Emotion Statistics**: Provide monthly or yearly emotion trend graphs
 -   **Social Features**: Ability to share diaries with other users or leave comments
 -   **Notification Feature**: Set reminders for diary writing

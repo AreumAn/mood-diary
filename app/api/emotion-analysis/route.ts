@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
-import { Emotion } from "@/lib/types";
+import { Emotion, KoreanEmotion, emotionMapping } from "@/lib/types";
 import { emotionTranslations } from "@/lib/translations";
 
 // API 라우트 핸들러
 export async function POST(request: NextRequest) {
   try {
     // 요청 본문에서 일기 내용과 언어 추출
-    const { content, language = "ko" } = await request.json();
+    const { content, language = "en" } = await request.json();
     
     if (!content || typeof content !== 'string') {
       const errorMessage = language === "ko" 
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
         ? "API 키가 구성되지 않았습니다." 
         : "API key is not configured.";
       return NextResponse.json(
-        { error: errorMessage, emotion: "평범" },
+        { error: errorMessage, emotion: "neutral" },
         { status: 500 }
       );
     }
@@ -54,8 +54,9 @@ export async function POST(request: NextRequest) {
     if (language === "ko") {
       prompt = `
       당신은 일기 내용을 분석하여 감정을 분류하는 AI입니다.
-      다음 감정 중 하나만 선택하세요: "행복", "슬픔", "분노", "평범", "신남".
-      오직 감정 단어 하나만 응답하세요.
+      다음 감정 중 하나만 선택하세요: "happy", "sad", "angry", "neutral", "excited".
+      이 영어 단어들은 각각 "행복", "슬픔", "분노", "평범", "신남"에 해당합니다.
+      오직 영어 감정 단어 하나만 응답하세요.
       
       일기 내용: ${content}
       
@@ -63,9 +64,8 @@ export async function POST(request: NextRequest) {
     } else {
       prompt = `
       You are an AI that analyzes diary content to classify emotions.
-      Choose only one emotion from the following: "행복", "슬픔", "분노", "평범", "신남".
-      These Korean words correspond to: "Happy", "Sad", "Angry", "Neutral", "Excited".
-      Respond with only one Korean emotion word from the list.
+      Choose only one emotion from the following: "happy", "sad", "angry", "neutral", "excited".
+      Respond with only one emotion word from the list.
       
       Diary content: ${content}
       
@@ -75,11 +75,11 @@ export async function POST(request: NextRequest) {
     // API 호출
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    const text = response.text().trim();
+    const text = response.text().trim().toLowerCase();
     
     // 유효한 감정인지 확인
-    const validEmotions: Emotion[] = ["행복", "슬픔", "분노", "평범", "신남"];
-    const emotion = validEmotions.includes(text as Emotion) ? text as Emotion : "평범";
+    const validEmotions: Emotion[] = ["happy", "sad", "angry", "neutral", "excited"];
+    const emotion = validEmotions.includes(text as Emotion) ? text as Emotion : "neutral";
     
     // 응답 반환
     return NextResponse.json({ emotion });
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { 
         error: "감정 분석 중 오류가 발생했습니다.", 
-        emotion: "평범" 
+        emotion: "neutral" 
       },
       { status: 500 }
     );

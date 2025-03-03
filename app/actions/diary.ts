@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { analyzeEmotionLocally } from "@/lib/local-emotion";
 
 // 감정 분석 Server Action
-export async function analyzeEmotion(content: string, language: "ko" | "en" = "ko"): Promise<Emotion> {
+export async function analyzeEmotion(content: string, language: "ko" | "en" = "en"): Promise<Emotion> {
   try {
     // API 라우트를 통해 감정 분석 요청
     const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/emotion-analysis`, {
@@ -25,7 +25,7 @@ export async function analyzeEmotion(content: string, language: "ko" | "en" = "k
   } catch (error) {
     console.error("감정 분석 중 오류 발생:", error);
     // 오류 발생 시 로컬 분석 사용
-    return analyzeEmotionLocally(content);
+    return analyzeEmotionLocally(content, language);
   }
 }
 
@@ -35,7 +35,7 @@ export async function saveDiaryWithEmotion(diary: {
   title: string;
   content: string;
   createdAt: string;
-}, language: "ko" | "en" = "ko"): Promise<{ success: boolean; diary?: DiaryEntry; error?: string }> {
+}, language: "ko" | "en" = "en"): Promise<{ success: boolean; diary?: DiaryEntry; error?: string }> {
   try {
     // 감정 분석
     const emotion = await analyzeEmotion(diary.content, language);
