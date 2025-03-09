@@ -1,4 +1,7 @@
-export type Emotion = "happy" | "sad" | "angry" | "neutral" | "excited";
+import { EmotionType, DiaryData } from './api';
+
+// api.ts의 EmotionType을 Emotion으로 재정의
+export type Emotion = EmotionType;
 
 // 이전 한글 감정 타입 (하위 호환성 유지)
 export type KoreanEmotion = "행복" | "슬픔" | "분노" | "평범" | "신남";
@@ -21,10 +24,31 @@ export const reverseEmotionMapping: Record<Emotion, KoreanEmotion> = {
   "excited": "신남"
 };
 
-export interface DiaryEntry {
-  id: string;
-  title: string;
-  content: string;
-  createdAt: string; // ISO 문자열 형식
-  emotion?: Emotion; // 감정 분석 결과
+// api.ts의 DiaryData를 DiaryEntry로 재정의
+export interface DiaryEntry extends Omit<DiaryData, 'updatedAt'> {
+  // updatedAt 필드는 선택적으로 유지
+  updatedAt?: string;
+}
+
+// DiaryEntry와 DiaryData 간 변환 함수
+export function toDiaryData(entry: DiaryEntry): DiaryData {
+  return {
+    id: entry.id,
+    title: entry.title,
+    content: entry.content,
+    createdAt: entry.createdAt,
+    emotion: entry.emotion,
+    updatedAt: entry.updatedAt
+  };
+}
+
+export function toDiaryEntry(data: DiaryData): DiaryEntry {
+  return {
+    id: data.id,
+    title: data.title,
+    content: data.content,
+    createdAt: data.createdAt,
+    emotion: data.emotion,
+    updatedAt: data.updatedAt
+  };
 } 

@@ -3,6 +3,7 @@
 import { DiaryEntry, Emotion } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 import { analyzeEmotionLocally } from "@/lib/local-emotion";
+import * as api from "@/lib/api";
 
 // 감정 분석 Server Action
 export async function analyzeEmotion(content: string, language: "ko" | "en" = "en"): Promise<Emotion> {
@@ -40,22 +41,75 @@ export async function saveDiaryWithEmotion(diary: {
     // 감정 분석
     const emotion = await analyzeEmotion(diary.content, language);
     
-    // 클라이언트에서 저장할 수 있도록 데이터 반환
-    const diaryWithEmotion: DiaryEntry = {
-      id: diary.id || crypto.randomUUID(),
+    // 일기 데이터 준비
+    const diaryWithEmotion = {
       title: diary.title,
       content: diary.content,
       createdAt: diary.createdAt,
       emotion: emotion,
     };
     
+    // Supabase에 저장
+    const savedDiary = await api.createDiary(diaryWithEmotion);
+    
     revalidatePath("/");
-    return { success: true, diary: diaryWithEmotion };
+    return { success: true, diary: savedDiary };
   } catch (error) {
     console.error("일기 저장 중 오류 발생:", error);
     const errorMessage = language === "ko" 
       ? error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다."
       : error instanceof Error ? error.message : "An unknown error occurred.";
+    
+    return { 
+      success: false, 
+      error: errorMessage
+    };
+  }
+}
+
+// 일기 업데이트 Server Action
+export async function updateDiaryWithEmotion(diary: DiaryEntry, language: "ko" | "en" = "en"): Promise<{ success: boolean; diary?: DiaryEntry; error?: string }> {
+  try {
+    // 감정 분석
+    const emotion = await analyzeEmotion(diary.content, language);
+    
+    // 감정 업데이트
+    const updatedDiary: DiaryEntry = {
+      ...diary,
+      emotion: emotion,
+    };
+    
+    // Supabase에 업데이트
+    const savedDiary = await api.updateDiary(updatedDiary);
+    
+    revalidatePath("/");
+    revalidatePath(`/diary/${diary.id}`);
+    
+    return { success: true, diary: savedDiary };
+  } catch (error) {
+    console.error("일기 업데이트 중 오류 발생:", error);
+    const errorMessage = language === "ko" 
+      ? error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다."
+      : error instanceof Error ? error.message : "An unknown error occurred.";
+    
+    return { 
+      success: false, 
+      error: errorMessage
+    };
+  }
+}
+
+// 일기 삭제 Server Action
+export async function deleteDiaryAction(id: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Supabase에서 삭제
+    await api.deleteDiary(id);
+    
+    revalidatePath("/");
+    return { success: true };
+  } catch (error) {
+    console.error("일기 삭제 중 오류 발생:", error);
+    const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다.";
     
     return { 
       success: false, 
