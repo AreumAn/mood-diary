@@ -40,7 +40,19 @@ type TranslationKey =
   | "writeNewDiary"
   | "diaryNotFound"
   | "emotion"
-  | "backToList";
+  | "backToList"
+  | "emotionAnalysisPrompt"
+  | "errorLoadingDiaries"
+  | "tryAgain"
+  | "deleting"
+  | "diaryNotFoundDesc"
+  | "diaryTitleFormat"
+  | "validContentRequired"
+  | "apiKeyNotConfigured"
+  | "emotionAnalysisError"
+  | "koreanPrompt"
+  | "englishPrompt"
+  | "languageCode";
 
 export type Language = "ko" | "en";
 
@@ -49,6 +61,23 @@ type Translations = {
     ko: string;
     en: string;
   };
+};
+
+// 특별한 조건 타입 정의
+export interface WeekendHappyCondition {
+  keyword1: string;
+  keyword2: string[];
+}
+
+export const weekendHappyCondition: Record<Language, WeekendHappyCondition> = {
+  ko: {
+    keyword1: "주말",
+    keyword2: ["좋", "행복"]
+  },
+  en: {
+    keyword1: "weekend",
+    keyword2: ["good", "happy"]
+  }
 };
 
 const translations: Translations = {
@@ -211,7 +240,98 @@ const translations: Translations = {
   backToList: {
     ko: "목록으로 돌아가기",
     en: "Back to List"
-  }
+  },
+  emotionAnalysisPrompt: {
+    ko: `당신은 일기 내용을 분석하여 감정을 분류하는 AI입니다.
+다음 감정 중 하나만 선택하세요: "happy", "sad", "angry", "neutral", "excited".
+이 영어 단어들은 각각 "행복", "슬픔", "분노", "평범", "신남"에 해당합니다.
+오직 영어 감정 단어 하나만 응답하세요. 다른 설명이나 문장은 포함하지 마세요.
+
+일기 내용: {{content}}
+
+감정(happy/sad/angry/neutral/excited 중 하나만):`,
+    en: `You are an AI that analyzes diary content to classify emotions.
+Choose only one emotion from the following: "happy", "sad", "angry", "neutral", "excited".
+Respond with ONLY ONE of these exact emotion words. Do not include any other text, explanation, or sentences.
+
+Diary content: {{content}}
+
+Emotion (only one of happy/sad/angry/neutral/excited):`
+  },
+  errorLoadingDiaries: {
+    ko: "일기 목록을 불러오는 중 오류가 발생했습니다.",
+    en: "An error occurred while loading diaries."
+  },
+  tryAgain: {
+    ko: "다시 시도",
+    en: "Try Again"
+  },
+  deleting: {
+    ko: "삭제 중...",
+    en: "Deleting..."
+  },
+  diaryNotFoundDesc: {
+    ko: "요청하신 일기를 찾을 수 없습니다.",
+    en: "The diary you requested could not be found."
+  },
+  diaryTitleFormat: {
+    ko: "yyyy년 MM월 dd일의 일기",
+    en: "'Diary for' MMMM d, yyyy"
+  },
+  validContentRequired: {
+    ko: "유효한 일기 내용이 필요합니다.",
+    en: "Valid diary content is required."
+  },
+  apiKeyNotConfigured: {
+    ko: "API 키가 구성되지 않았습니다.",
+    en: "API key is not configured."
+  },
+  emotionAnalysisError: {
+    ko: "감정 분석 중 오류가 발생했습니다.",
+    en: "An error occurred during emotion analysis."
+  },
+  koreanPrompt: {
+    ko: `
+      당신은 일기 내용을 분석하여 감정을 분류하는 AI입니다.
+      다음 감정 중 하나만 선택하세요: "happy", "sad", "angry", "neutral", "excited".
+      이 영어 단어들은 각각 "행복", "슬픔", "분노", "평범", "신남"에 해당합니다.
+      오직 영어 감정 단어 하나만 응답하세요.
+      
+      일기 내용: {{content}}
+      
+      감정:`,
+    en: `
+      당신은 일기 내용을 분석하여 감정을 분류하는 AI입니다.
+      다음 감정 중 하나만 선택하세요: "happy", "sad", "angry", "neutral", "excited".
+      이 영어 단어들은 각각 "행복", "슬픔", "분노", "평범", "신남"에 해당합니다.
+      오직 영어 감정 단어 하나만 응답하세요.
+      
+      일기 내용: {{content}}
+      
+      감정:`
+  },
+  englishPrompt: {
+    ko: `
+      You are an AI that analyzes diary content to classify emotions.
+      Choose only one emotion from the following: "happy", "sad", "angry", "neutral", "excited".
+      Respond with only one emotion word from the list.
+      
+      Diary content: {{content}}
+      
+      Emotion:`,
+    en: `
+      You are an AI that analyzes diary content to classify emotions.
+      Choose only one emotion from the following: "happy", "sad", "angry", "neutral", "excited".
+      Respond with only one emotion word from the list.
+      
+      Diary content: {{content}}
+      
+      Emotion:`
+  },
+  languageCode: {
+    ko: "KO",
+    en: "EN"
+  },
 };
 
 export function t(key: TranslationKey, language: Language): string {

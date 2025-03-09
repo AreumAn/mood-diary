@@ -1,4 +1,5 @@
 import { Emotion } from "@/lib/types";
+import { Language, weekendHappyCondition } from "@/lib/translations";
 
 // 감정별 키워드 정의
 const EMOTION_KEYWORDS: Record<Emotion, { ko: string[]; en: string[] }> = {
@@ -25,22 +26,14 @@ const EMOTION_KEYWORDS: Record<Emotion, { ko: string[]; en: string[] }> = {
 };
 
 // 간단한 로컬 감정 분석 함수 (API 호출 없이 작동)
-export function analyzeEmotionLocally(content: string, language: "ko" | "en" = "en"): Emotion {
+export function analyzeEmotionLocally(content: string, language: Language = "en"): Emotion {
   const lowerContent = content.toLowerCase();
   
   // 특수 복합 조건 확인
-  if (language === "ko") {
-    // 한국어 특수 조건
-    if (lowerContent.includes("주말") && 
-        (lowerContent.includes("좋") || lowerContent.includes("행복"))) {
-      return "happy";
-    }
-  } else {
-    // 영어 특수 조건
-    if (lowerContent.includes("weekend") && 
-        (lowerContent.includes("good") || lowerContent.includes("happy"))) {
-      return "happy";
-    }
+  const condition = weekendHappyCondition[language];
+  if (lowerContent.includes(condition.keyword1) && 
+      condition.keyword2.some(keyword => lowerContent.includes(keyword))) {
+    return "happy";
   }
   
   // 각 감정별 키워드 확인

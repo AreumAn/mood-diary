@@ -3,6 +3,7 @@
 import { useLanguage } from "@/lib/language-provider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { t } from "@/lib/translations";
 
 export function LanguageToggle() {
   const { language, setLanguage } = useLanguage();
@@ -12,7 +13,7 @@ export function LanguageToggle() {
   return (
     <div className="flex items-center space-x-2">
       <Label htmlFor="language-toggle" className="text-sm cursor-pointer">
-        {isKorean ? "KO" : "EN"}
+        {t("languageCode", language)}
       </Label>
       <Switch
         id="language-toggle"

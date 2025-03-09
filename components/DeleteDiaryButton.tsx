@@ -12,10 +12,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { deleteDiary } from "@/lib/diary"
 import { Trash2 } from "lucide-react"
 import { useLanguage } from "@/lib/language-provider"
 import { t } from "@/lib/translations"
+import { deleteDiaryAction } from "@/app/actions/diary"
 
 interface DeleteDiaryButtonProps {
   diaryId: string
@@ -25,15 +25,25 @@ export function DeleteDiaryButton({ diaryId }: DeleteDiaryButtonProps) {
   const router = useRouter()
   const { language } = useLanguage()
   const [open, setOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     try {
-      deleteDiary(diaryId)
+      setIsDeleting(true)
+      const result = await deleteDiaryAction(diaryId, language)
+      
+      if (!result.success) {
+        throw new Error(result.error || t("errorDeleting", language))
+      }
+      
       setOpen(false)
       router.push("/")
+      router.refresh()
     } catch (error) {
       console.error(`${t("errorDeleting", language)}:`, error)
       alert(t("errorDeleting", language))
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -56,11 +66,24 @@ export function DeleteDiaryButton({ diaryId }: DeleteDiaryButtonProps) {
             variant="outline"
             onClick={() => setOpen(false)}
             className="hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
+            disabled={isDeleting}
           >
             {t("no", language)}
           </Button>
-          <Button variant="destructive" onClick={handleDelete} className="bg-red-500 hover:bg-red-600 text-white cursor-pointer">
-            {t("yes", language)}
+          <Button 
+            variant="destructive" 
+            onClick={handleDelete} 
+            className="bg-red-500 hover:bg-red-600 text-white cursor-pointer"
+            disabled={isDeleting}
+          >
+            {isDeleting ? (
+              <>
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+                {t("deleting", language)}
+              </>
+            ) : (
+              t("yes", language)
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

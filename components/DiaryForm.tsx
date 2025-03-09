@@ -9,8 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import type { DiaryEntry } from "@/lib/types"
-import { saveDiary, updateDiary } from "@/lib/diary"
-import { saveDiaryWithEmotion } from "@/app/actions/diary"
+import { saveDiaryWithEmotion, updateDiaryWithEmotion } from "@/app/actions/diary"
 import { format } from "date-fns"
 import { ko, enUS } from "date-fns/locale"
 import { CalendarIcon } from "lucide-react"
@@ -34,11 +33,8 @@ export function DiaryForm({ diary, isEditing = false }: DiaryFormProps) {
   // 날짜 형식 및 로케일 설정
   const dateLocale = language === "ko" ? ko : enUS
   const formatTitle = (date: Date) => {
-    if (language === "ko") {
-      return format(date, "yyyy년 MM월 dd일의 일기", { locale: ko })
-    } else {
-      return format(date, "'Diary for' MMMM d, yyyy", { locale: enUS })
-    }
+    const formatString = t("diaryTitleFormat", language)
+    return format(date, formatString, { locale: dateLocale })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,28 +46,28 @@ export function DiaryForm({ diary, isEditing = false }: DiaryFormProps) {
       const title = formatTitle(date)
 
       if (isEditing && diary) {
-        const result = await saveDiaryWithEmotion({
-          id: diary.id,
+        // 기존 일기 업데이트
+        const updatedDiary: DiaryEntry = {
+          ...diary,
           title,
           content,
           createdAt: date.toISOString(),
-        }, language)
+        }
+        
+        const result = await updateDiaryWithEmotion(updatedDiary, language)
 
-        if (result.success && result.diary) {
-          updateDiary(result.diary)
-        } else {
+        if (!result.success) {
           throw new Error(result.error || t("errorSaving", language))
         }
       } else {
+        // 새 일기 저장
         const result = await saveDiaryWithEmotion({
           title,
           content,
           createdAt: date.toISOString(),
         }, language)
 
-        if (result.success && result.diary) {
-          saveDiary(result.diary)
-        } else {
+        if (!result.success) {
           throw new Error(result.error || t("errorSaving", language))
         }
       }

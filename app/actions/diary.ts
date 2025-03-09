@@ -4,11 +4,12 @@ import { DiaryEntry, Emotion } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 import { analyzeEmotionLocally } from "@/lib/local-emotion";
 import * as api from "@/lib/api";
+import { t } from "@/lib/translations";
+import { Language } from "@/lib/translations";
 
 // 감정 분석 Server Action
 export async function analyzeEmotion(content: string, language: "ko" | "en" = "en"): Promise<Emotion> {
   try {
-    // API 라우트를 통해 감정 분석 요청
     const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/emotion-analysis`, {
       method: "POST",
       headers: {
@@ -56,13 +57,9 @@ export async function saveDiaryWithEmotion(diary: {
     return { success: true, diary: savedDiary };
   } catch (error) {
     console.error("일기 저장 중 오류 발생:", error);
-    const errorMessage = language === "ko" 
-      ? error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다."
-      : error instanceof Error ? error.message : "An unknown error occurred.";
-    
     return { 
       success: false, 
-      error: errorMessage
+      error: error instanceof Error ? error.message : t("unknownError", language)
     };
   }
 }
@@ -88,19 +85,15 @@ export async function updateDiaryWithEmotion(diary: DiaryEntry, language: "ko" |
     return { success: true, diary: savedDiary };
   } catch (error) {
     console.error("일기 업데이트 중 오류 발생:", error);
-    const errorMessage = language === "ko" 
-      ? error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다."
-      : error instanceof Error ? error.message : "An unknown error occurred.";
-    
     return { 
       success: false, 
-      error: errorMessage
+      error: error instanceof Error ? error.message : t("unknownError", language)
     };
   }
 }
 
 // 일기 삭제 Server Action
-export async function deleteDiaryAction(id: string): Promise<{ success: boolean; error?: string }> {
+export async function deleteDiaryAction(id: string, language: Language = "en"): Promise<{ success: boolean; error?: string }> {
   try {
     // Supabase에서 삭제
     await api.deleteDiary(id);
@@ -109,11 +102,9 @@ export async function deleteDiaryAction(id: string): Promise<{ success: boolean;
     return { success: true };
   } catch (error) {
     console.error("일기 삭제 중 오류 발생:", error);
-    const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다.";
-    
     return { 
       success: false, 
-      error: errorMessage
+      error: error instanceof Error ? error.message : t("unknownError", language)
     };
   }
 } 

@@ -6,13 +6,14 @@ import Link from "next/link"
 import { useRouter, useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { DeleteDiaryButton } from "@/components/DeleteDiaryButton"
-import { getDiaryById } from "@/lib/diary"
 import { formatDate } from "@/lib/utils"
 import { Smile, Frown, Angry, Meh, Zap, Pencil, ArrowLeft } from "lucide-react"
 import type { DiaryEntry, Emotion } from "@/lib/types"
 import { useLanguage } from "@/lib/language-provider"
 import { t } from "@/lib/translations"
 import { emotionTranslations } from "@/lib/translations"
+import * as api from "@/lib/api"
+import { toDiaryEntry } from "@/lib/types"
 
 const emotionIcons: Record<Emotion, React.ReactNode> = {
   happy: <Smile className="h-6 w-6 text-yellow-500" />,
@@ -28,23 +29,39 @@ export default function DiaryDetailPage() {
   const id = params?.id as string
   const [diary, setDiary] = useState<DiaryEntry | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const { language } = useLanguage()
 
   useEffect(() => {
-    const loadDiary = () => {
+    const loadDiary = async () => {
       if (!id) return
       
-      const foundDiary = getDiaryById(id)
-      if (foundDiary) {
-        setDiary(foundDiary)
-      } else {
-        router.push("/")
+      try {
+        setIsLoading(true)
+        // Supabase에서 일기 가져오기
+        const diaryData = await api.getDiary(id)
+        
+        if (!diaryData) {
+          setDiary(null)
+          setError(t("diaryNotFound", language))
+          return
+        }
+        
+        // DiaryData를 DiaryEntry로 변환
+        const diaryEntry = toDiaryEntry(diaryData)
+        setDiary(diaryEntry)
+        setError(null)
+      } catch (err) {
+        console.error(`ID ${id}로 일기 조회 중 오류 발생:`, err)
+        setError(t("errorLoading", language))
+        setDiary(null)
+      } finally {
+        setIsLoading(false)
       }
-      setIsLoading(false)
     }
 
     loadDiary()
-  }, [id, router])
+  }, [id, language, router])
 
   if (isLoading) {
     return (
@@ -54,10 +71,12 @@ export default function DiaryDetailPage() {
     )
   }
 
-  if (!diary) {
+  if (error || !diary) {
     return (
       <div className="container mx-auto py-8 text-center min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
-        <h2 className="text-2xl font-bold mb-4 text-slate-800 dark:text-white">{t("diaryNotFound", language)}</h2>
+        <h2 className="text-2xl font-bold mb-4 text-slate-800 dark:text-white">
+          {error || t("diaryNotFound", language)}
+        </h2>
         <Link href="/">
           <Button className="bg-indigo-600 hover:bg-indigo-700 text-white transition-colors duration-300">
             {t("backToHome", language)}

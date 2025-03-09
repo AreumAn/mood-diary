@@ -1,33 +1,54 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useParams } from "next/navigation"
 import { DiaryForm } from "@/components/DiaryForm"
-import { getDiaryById } from "@/lib/diary"
 import type { DiaryEntry } from "@/lib/types"
-import { use } from "react"
 import { Pencil } from "lucide-react"
+import { useLanguage } from "@/lib/language-provider"
+import { t } from "@/lib/translations"
+import * as api from "@/lib/api"
+import { toDiaryEntry } from "@/lib/types"
 
-export default function EditDiaryPage({ params }: { params: { id: string } }) {
+export default function EditDiaryPage() {
   const router = useRouter()
+  const params = useParams()
+  const id = params?.id as string
   const [diary, setDiary] = useState<DiaryEntry | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-
-  const id = use(params).id
+  const [error, setError] = useState<string | null>(null)
+  const { language } = useLanguage()
 
   useEffect(() => {
-    const loadDiary = () => {
-      const foundDiary = getDiaryById(id)
-      if (foundDiary) {
-        setDiary(foundDiary)
-      } else {
-        router.push("/")
+    const loadDiary = async () => {
+      if (!id) return
+      
+      try {
+        setIsLoading(true)
+        // Supabase에서 일기 가져오기
+        const diaryData = await api.getDiary(id)
+        
+        if (!diaryData) {
+          setDiary(null)
+          setError(t("diaryNotFound", language))
+          return
+        }
+        
+        // DiaryData를 DiaryEntry로 변환
+        const diaryEntry = toDiaryEntry(diaryData)
+        setDiary(diaryEntry)
+        setError(null)
+      } catch (err) {
+        console.error(`ID ${id}로 일기 조회 중 오류 발생:`, err)
+        setError(t("errorLoading", language))
+        setDiary(null)
+      } finally {
+        setIsLoading(false)
       }
-      setIsLoading(false)
     }
 
     loadDiary()
-  }, [id, router])
+  }, [id, language, router])
 
   if (isLoading) {
     return (
@@ -37,10 +58,12 @@ export default function EditDiaryPage({ params }: { params: { id: string } }) {
     )
   }
 
-  if (!diary) {
+  if (error || !diary) {
     return (
       <div className="container mx-auto py-8 text-center min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
-        <h2 className="text-2xl font-bold mb-4 text-slate-800 dark:text-white">일기를 찾을 수 없습니다</h2>
+        <h2 className="text-2xl font-bold mb-4 text-slate-800 dark:text-white">
+          {error || t("diaryNotFound", language)}
+        </h2>
       </div>
     )
   }
@@ -50,7 +73,7 @@ export default function EditDiaryPage({ params }: { params: { id: string } }) {
       <div className="max-w-3xl mx-auto">
         <h1 className="text-3xl font-bold mb-8 text-slate-800 dark:text-white flex items-center">
           <Pencil className="mr-2 h-8 w-8 text-indigo-500" />
-          일기 수정
+          {t("edit", language)}
         </h1>
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6">
           <DiaryForm diary={diary} isEditing />

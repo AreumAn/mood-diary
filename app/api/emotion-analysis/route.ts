@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 import { Emotion, KoreanEmotion, emotionMapping } from "@/lib/types";
-import { emotionTranslations } from "@/lib/translations";
+import { emotionTranslations, t } from "@/lib/translations";
+import { Language } from "@/lib/translations";
 
 // API 라우트 핸들러
 export async function POST(request: NextRequest) {
@@ -10,11 +11,8 @@ export async function POST(request: NextRequest) {
     const { content, language = "en" } = await request.json();
     
     if (!content || typeof content !== 'string') {
-      const errorMessage = language === "ko" 
-        ? "유효한 일기 내용이 필요합니다." 
-        : "Valid diary content is required.";
       return NextResponse.json(
-        { error: errorMessage },
+        { error: t("validContentRequired", language as Language) },
         { status: 400 }
       );
     }
@@ -22,11 +20,8 @@ export async function POST(request: NextRequest) {
     // API 키 검증
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      const errorMessage = language === "ko" 
-        ? "API 키가 구성되지 않았습니다." 
-        : "API key is not configured.";
       return NextResponse.json(
-        { error: errorMessage, emotion: "neutral" },
+        { error: t("apiKeyNotConfigured", language as Language), emotion: "neutral" },
         { status: 500 }
       );
     }
@@ -49,47 +44,64 @@ export async function POST(request: NextRequest) {
       ],
     });
     
-    // 프롬프트 생성 (언어에 따라 다른 프롬프트 사용)
-    let prompt;
-    if (language === "ko") {
-      prompt = `
-      당신은 일기 내용을 분석하여 감정을 분류하는 AI입니다.
-      다음 감정 중 하나만 선택하세요: "happy", "sad", "angry", "neutral", "excited".
-      이 영어 단어들은 각각 "행복", "슬픔", "분노", "평범", "신남"에 해당합니다.
-      오직 영어 감정 단어 하나만 응답하세요.
-      
-      일기 내용: ${content}
-      
-      감정:`;
-    } else {
-      prompt = `
-      You are an AI that analyzes diary content to classify emotions.
-      Choose only one emotion from the following: "happy", "sad", "angry", "neutral", "excited".
-      Respond with only one emotion word from the list.
-      
-      Diary content: ${content}
-      
-      Emotion:`;
-    }
+    // 프롬프트 생성
+    const prompt = t("emotionAnalysisPrompt", language as Language).replace("{{content}}", content);
+    
+    console.log("Gemini API 요청 프롬프트:", prompt);
     
     // API 호출
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    const text = response.text().trim().toLowerCase();
+    let text = response.text().trim().toLowerCase();
+    
+    console.log("Gemini API 원본 응답:", response);
+    console.log("Gemini API 텍스트 응답:", text);
+    
+    // 응답에서 감정 단어만 추출 (다른 텍스트가 포함된 경우)
+    const emotionWords = ["happy", "sad", "angry", "neutral", "excited"];
+    let extractedEmotion = null;
+    
+    // 정확히 일치하는 단어 찾기
+    for (const emotion of emotionWords) {
+      if (text === emotion) {
+        extractedEmotion = emotion;
+        break;
+      }
+    }
+    
+    // 정확히 일치하는 단어가 없으면 포함된 단어 찾기
+    if (!extractedEmotion) {
+      for (const emotion of emotionWords) {
+        if (text.includes(emotion)) {
+          extractedEmotion = emotion;
+          break;
+        }
+      }
+    }
     
     // 유효한 감정인지 확인
     const validEmotions: Emotion[] = ["happy", "sad", "angry", "neutral", "excited"];
-    const emotion = validEmotions.includes(text as Emotion) ? text as Emotion : "neutral";
+    const emotion = extractedEmotion && validEmotions.includes(extractedEmotion as Emotion) 
+      ? extractedEmotion as Emotion 
+      : "neutral";
+    
+    console.log("최종 감정 결과:", emotion, "원본 텍스트:", text);
     
     // 응답 반환
     return NextResponse.json({ emotion });
   } catch (error) {
     console.error("감정 분석 중 오류 발생:", error);
     
+    // 오류 세부 정보 로깅
+    if (error instanceof Error) {
+      console.error("에러 메시지:", error.message);
+      console.error("에러 스택:", error.stack);
+    }
+    
     // 오류 발생 시 기본 감정 반환
     return NextResponse.json(
       { 
-        error: "감정 분석 중 오류가 발생했습니다.", 
+        error: t("emotionAnalysisError", "ko"), 
         emotion: "neutral" 
       },
       { status: 500 }
