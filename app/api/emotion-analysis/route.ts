@@ -4,10 +4,10 @@ import { Emotion, KoreanEmotion, emotionMapping } from "@/lib/types";
 import { emotionTranslations, t } from "@/lib/translations";
 import { Language } from "@/lib/translations";
 
-// API 라우트 핸들러
+// API route handler
 export async function POST(request: NextRequest) {
   try {
-    // 요청 본문에서 일기 내용과 언어 추출
+    // Extract diary content and language from request body
     const { content, language = "en" } = await request.json();
     
     if (!content || typeof content !== 'string') {
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // API 키 검증
+    // Validate API key
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
@@ -26,10 +26,10 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Gemini API 클라이언트 초기화
+    // Initialize Gemini API client
     const genAI = new GoogleGenerativeAI(apiKey);
     
-    // 모델 초기화
+    // Initialize model
     const model = genAI.getGenerativeModel({
       model: "gemini-1.5-flash",
       safetySettings: [
@@ -44,24 +44,24 @@ export async function POST(request: NextRequest) {
       ],
     });
     
-    // 프롬프트 생성
+    // Generate prompt
     const prompt = t("emotionAnalysisPrompt", language as Language).replace("{{content}}", content);
     
-    console.log("Gemini API 요청 프롬프트:", prompt);
+    console.log("Gemini API request prompt:", prompt);
     
-    // API 호출
+    // API call
     const result = await model.generateContent(prompt);
     const response = await result.response;
     let text = response.text().trim().toLowerCase();
     
-    console.log("Gemini API 원본 응답:", response);
-    console.log("Gemini API 텍스트 응답:", text);
+    console.log("Gemini API original response:", response);
+    console.log("Gemini API text response:", text);
     
-    // 응답에서 감정 단어만 추출 (다른 텍스트가 포함된 경우)
+    // Extract emotion words from response (if other text is included)
     const emotionWords = ["happy", "sad", "angry", "neutral", "excited"];
     let extractedEmotion = null;
     
-    // 정확히 일치하는 단어 찾기
+    // Find exact match
     for (const emotion of emotionWords) {
       if (text === emotion) {
         extractedEmotion = emotion;
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    // 정확히 일치하는 단어가 없으면 포함된 단어 찾기
+    // If no exact match, find included word
     if (!extractedEmotion) {
       for (const emotion of emotionWords) {
         if (text.includes(emotion)) {
@@ -79,26 +79,26 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    // 유효한 감정인지 확인
+    // Validate valid emotion
     const validEmotions: Emotion[] = ["happy", "sad", "angry", "neutral", "excited"];
     const emotion = extractedEmotion && validEmotions.includes(extractedEmotion as Emotion) 
       ? extractedEmotion as Emotion 
       : "neutral";
     
-    console.log("최종 감정 결과:", emotion, "원본 텍스트:", text);
+    console.log("Final emotion result:", emotion, "Original text:", text);
     
-    // 응답 반환
+    // Return response
     return NextResponse.json({ emotion });
   } catch (error) {
-    console.error("감정 분석 중 오류 발생:", error);
+    console.error("Error occurred during emotion analysis:", error);
     
-    // 오류 세부 정보 로깅
+    // Log detailed error information
     if (error instanceof Error) {
-      console.error("에러 메시지:", error.message);
-      console.error("에러 스택:", error.stack);
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
     }
     
-    // 오류 발생 시 기본 감정 반환
+    // Return default emotion if error occurs
     return NextResponse.json(
       { 
         error: t("emotionAnalysisError", "ko"), 

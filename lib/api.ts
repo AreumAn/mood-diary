@@ -1,10 +1,10 @@
 import { supabase } from './supabase';
 import { v4 as uuidv4 } from 'uuid';
 
-// Supabase 테이블 타입 정의
+// Type definition for Supabase table
 export type EmotionType = 'happy' | 'sad' | 'angry' | 'neutral' | 'excited';
 
-// Supabase 테이블 스키마에 맞는 타입
+// Type matching Supabase table schema
 export interface DiaryTable {
   id: string;
   title: string;
@@ -14,7 +14,7 @@ export interface DiaryTable {
   updated_at: string | null;
 }
 
-// 앱에서 사용할 타입
+// Type used in the application
 export interface DiaryData {
   id: string;
   title: string;
@@ -24,7 +24,7 @@ export interface DiaryData {
   updatedAt?: string;
 }
 
-// 일기 목록 조회
+// Get diary list
 export async function getDiaries(): Promise<DiaryData[]> {
   try {
     const { data, error } = await supabase
@@ -33,10 +33,10 @@ export async function getDiaries(): Promise<DiaryData[]> {
       .order('created_at', { ascending: false });
 
     if (error) {
-      throw new Error(`일기 목록 조회 오류: ${error.message}`);
+      throw new Error(`Error fetching diary list: ${error.message}`);
     }
 
-    // Supabase 데이터 형식을 앱 데이터 형식으로 변환
+    // Convert Supabase data format to app data format
     return (data as DiaryTable[]).map((diary) => ({
       id: diary.id,
       title: diary.title,
@@ -46,12 +46,12 @@ export async function getDiaries(): Promise<DiaryData[]> {
       updatedAt: diary.updated_at || undefined,
     }));
   } catch (error) {
-    console.error('일기 목록 조회 중 오류 발생:', error);
+    console.error('Error occurred while fetching diaries:', error);
     throw error;
   }
 }
 
-// 특정 일기 조회
+// Get specific diary
 export async function getDiary(id: string): Promise<DiaryData | null> {
   try {
     const { data, error } = await supabase
@@ -61,7 +61,7 @@ export async function getDiary(id: string): Promise<DiaryData | null> {
       .single();
 
     if (error) {
-      throw new Error(`일기 조회 오류: ${error.message}`);
+      throw new Error(`Error fetching diary: ${error.message}`);
     }
 
     if (!data) {
@@ -70,7 +70,7 @@ export async function getDiary(id: string): Promise<DiaryData | null> {
 
     const diary = data as DiaryTable;
     
-    // Supabase 데이터 형식을 앱 데이터 형식으로 변환
+    // Convert Supabase data format to app data format
     return {
       id: diary.id,
       title: diary.title,
@@ -80,15 +80,15 @@ export async function getDiary(id: string): Promise<DiaryData | null> {
       updatedAt: diary.updated_at || undefined,
     };
   } catch (error) {
-    console.error(`ID ${id}로 일기 조회 중 오류 발생:`, error);
+    console.error(`Error occurred while fetching diary with ID ${id}:`, error);
     throw error;
   }
 }
 
-// 일기 생성
+// Create diary
 export async function createDiary(diary: Omit<DiaryData, 'id'>): Promise<DiaryData> {
   try {
-    // 앱 데이터 형식을 Supabase 데이터 형식으로 변환
+    // Convert app data format to Supabase data format
     const newDiary: Omit<DiaryTable, 'id' | 'updated_at'> & { id?: string } = {
       title: diary.title,
       content: diary.content,
@@ -96,7 +96,7 @@ export async function createDiary(diary: Omit<DiaryData, 'id'>): Promise<DiaryDa
       emotion: diary.emotion || null,
     };
 
-    // UUID 생성
+    // Generate UUID
     if (!newDiary.id) {
       newDiary.id = uuidv4();
     }
@@ -108,12 +108,12 @@ export async function createDiary(diary: Omit<DiaryData, 'id'>): Promise<DiaryDa
       .single();
 
     if (error) {
-      throw new Error(`일기 생성 오류: ${error.message}`);
+      throw new Error(`Error creating diary: ${error.message}`);
     }
 
     const createdDiary = data as DiaryTable;
     
-    // Supabase 데이터 형식을 앱 데이터 형식으로 변환
+    // Convert Supabase data format to app data format
     return {
       id: createdDiary.id,
       title: createdDiary.title,
@@ -123,15 +123,15 @@ export async function createDiary(diary: Omit<DiaryData, 'id'>): Promise<DiaryDa
       updatedAt: createdDiary.updated_at || undefined,
     };
   } catch (error) {
-    console.error('일기 생성 중 오류 발생:', error);
+    console.error('Error occurred while creating diary:', error);
     throw error;
   }
 }
 
-// 일기 수정
+// Update diary
 export async function updateDiary(diary: DiaryData): Promise<DiaryData> {
   try {
-    // 앱 데이터 형식을 Supabase 데이터 형식으로 변환
+    // Convert app data format to Supabase data format
     const updateData: Partial<DiaryTable> = {
       title: diary.title,
       content: diary.content,
@@ -148,12 +148,12 @@ export async function updateDiary(diary: DiaryData): Promise<DiaryData> {
       .single();
 
     if (error) {
-      throw new Error(`일기 수정 오류: ${error.message}`);
+      throw new Error(`Error updating diary: ${error.message}`);
     }
 
     const updatedDiary = data as DiaryTable;
     
-    // Supabase 데이터 형식을 앱 데이터 형식으로 변환
+    // Convert Supabase data format to app data format
     return {
       id: updatedDiary.id,
       title: updatedDiary.title,
@@ -163,12 +163,12 @@ export async function updateDiary(diary: DiaryData): Promise<DiaryData> {
       updatedAt: updatedDiary.updated_at || undefined,
     };
   } catch (error) {
-    console.error(`ID ${diary.id}로 일기 수정 중 오류 발생:`, error);
+    console.error(`Error occurred while updating diary with ID ${diary.id}:`, error);
     throw error;
   }
 }
 
-// 일기 삭제
+// Delete diary
 export async function deleteDiary(id: string): Promise<boolean> {
   try {
     const { error } = await supabase
@@ -177,17 +177,17 @@ export async function deleteDiary(id: string): Promise<boolean> {
       .eq('id', id);
 
     if (error) {
-      throw new Error(`일기 삭제 오류: ${error.message}`);
+      throw new Error(`Error deleting diary: ${error.message}`);
     }
 
     return true;
   } catch (error) {
-    console.error(`ID ${id}로 일기 삭제 중 오류 발생:`, error);
+    console.error(`Error occurred while deleting diary with ID ${id}:`, error);
     throw error;
   }
 }
 
-// 감정 업데이트
+// Update emotion
 export async function updateEmotion(id: string, emotion: EmotionType): Promise<DiaryData> {
   try {
     const { data, error } = await supabase
@@ -201,12 +201,12 @@ export async function updateEmotion(id: string, emotion: EmotionType): Promise<D
       .single();
 
     if (error) {
-      throw new Error(`감정 업데이트 오류: ${error.message}`);
+      throw new Error(`Error updating emotion: ${error.message}`);
     }
 
     const updatedDiary = data as DiaryTable;
     
-    // Supabase 데이터 형식을 앱 데이터 형식으로 변환
+    // Convert Supabase data format to app data format
     return {
       id: updatedDiary.id,
       title: updatedDiary.title,
@@ -216,7 +216,7 @@ export async function updateEmotion(id: string, emotion: EmotionType): Promise<D
       updatedAt: updatedDiary.updated_at || undefined,
     };
   } catch (error) {
-    console.error(`ID ${id}로 감정 업데이트 중 오류 발생:`, error);
+    console.error(`Error occurred while updating emotion for diary with ID ${id}:`, error);
     throw error;
   }
 }

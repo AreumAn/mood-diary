@@ -52,7 +52,9 @@ type TranslationKey =
   | "emotionAnalysisError"
   | "koreanPrompt"
   | "englishPrompt"
-  | "languageCode";
+  | "languageCode"
+  | "analyzingEmotion"
+  | "analyzingEmotionDesc";
 
 export type Language = "ko" | "en";
 
@@ -331,6 +333,14 @@ Emotion (only one of happy/sad/angry/neutral/excited):`
   languageCode: {
     ko: "KO",
     en: "EN"
+  },
+  analyzingEmotion: {
+    ko: "감정 분석 중...",
+    en: "Analyzing emotion..."
+  },
+  analyzingEmotionDesc: {
+    ko: "AI가 일기의 감정을 분석하고 있습니다. 잠시만 기다려주세요.",
+    en: "AI is analyzing the emotion of your diary. Please wait a moment."
   },
 };
 

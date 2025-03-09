@@ -25,7 +25,7 @@ export default function EditDiaryPage() {
       
       try {
         setIsLoading(true)
-        // Supabase에서 일기 가져오기
+        // Fetch diary from Supabase
         const diaryData = await api.getDiary(id)
         
         if (!diaryData) {
@@ -34,12 +34,12 @@ export default function EditDiaryPage() {
           return
         }
         
-        // DiaryData를 DiaryEntry로 변환
+        // Convert DiaryData to DiaryEntry
         const diaryEntry = toDiaryEntry(diaryData)
         setDiary(diaryEntry)
         setError(null)
       } catch (err) {
-        console.error(`ID ${id}로 일기 조회 중 오류 발생:`, err)
+        console.error(`Error fetching diary with ID ${id}:`, err)
         setError(t("errorLoading", language))
         setDiary(null)
       } finally {

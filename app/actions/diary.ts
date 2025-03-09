@@ -7,7 +7,7 @@ import * as api from "@/lib/api";
 import { t } from "@/lib/translations";
 import { Language } from "@/lib/translations";
 
-// 감정 분석 Server Action
+// Emotion Analysis Server Action
 export async function analyzeEmotion(content: string, language: "ko" | "en" = "en"): Promise<Emotion> {
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/emotion-analysis`, {
@@ -19,19 +19,19 @@ export async function analyzeEmotion(content: string, language: "ko" | "en" = "e
     });
     
     if (!response.ok) {
-      throw new Error(`API 요청 실패: ${response.status}`);
+      throw new Error(`API request failed: ${response.status}`);
     }
     
     const data = await response.json();
     return data.emotion as Emotion;
   } catch (error) {
-    console.error("감정 분석 중 오류 발생:", error);
-    // 오류 발생 시 로컬 분석 사용
+    console.error("Error during emotion analysis:", error);
+    // Use local analysis when API fails
     return analyzeEmotionLocally(content, language);
   }
 }
 
-// 일기 저장 및 감정 분석 Server Action
+// Diary Saving and Emotion Analysis Server Action
 export async function saveDiaryWithEmotion(diary: {
   id?: string;
   title: string;
@@ -39,10 +39,10 @@ export async function saveDiaryWithEmotion(diary: {
   createdAt: string;
 }, language: "ko" | "en" = "en"): Promise<{ success: boolean; diary?: DiaryEntry; error?: string }> {
   try {
-    // 감정 분석
+    // Analyze emotion
     const emotion = await analyzeEmotion(diary.content, language);
     
-    // 일기 데이터 준비
+    // Prepare diary data
     const diaryWithEmotion = {
       title: diary.title,
       content: diary.content,
@@ -50,13 +50,13 @@ export async function saveDiaryWithEmotion(diary: {
       emotion: emotion,
     };
     
-    // Supabase에 저장
+    // Save to Supabase
     const savedDiary = await api.createDiary(diaryWithEmotion);
     
     revalidatePath("/");
     return { success: true, diary: savedDiary };
   } catch (error) {
-    console.error("일기 저장 중 오류 발생:", error);
+    console.error("Error during diary saving:", error);
     return { 
       success: false, 
       error: error instanceof Error ? error.message : t("unknownError", language)
@@ -64,19 +64,19 @@ export async function saveDiaryWithEmotion(diary: {
   }
 }
 
-// 일기 업데이트 Server Action
+// Diary Update Server Action
 export async function updateDiaryWithEmotion(diary: DiaryEntry, language: "ko" | "en" = "en"): Promise<{ success: boolean; diary?: DiaryEntry; error?: string }> {
   try {
-    // 감정 분석
+    // Analyze emotion
     const emotion = await analyzeEmotion(diary.content, language);
     
-    // 감정 업데이트
+    // Update emotion
     const updatedDiary: DiaryEntry = {
       ...diary,
       emotion: emotion,
     };
     
-    // Supabase에 업데이트
+    // Save to Supabase
     const savedDiary = await api.updateDiary(updatedDiary);
     
     revalidatePath("/");
@@ -84,7 +84,7 @@ export async function updateDiaryWithEmotion(diary: DiaryEntry, language: "ko" |
     
     return { success: true, diary: savedDiary };
   } catch (error) {
-    console.error("일기 업데이트 중 오류 발생:", error);
+    console.error("Error during diary update:", error);
     return { 
       success: false, 
       error: error instanceof Error ? error.message : t("unknownError", language)
@@ -92,16 +92,16 @@ export async function updateDiaryWithEmotion(diary: DiaryEntry, language: "ko" |
   }
 }
 
-// 일기 삭제 Server Action
+// Diary Delete Server Action
 export async function deleteDiaryAction(id: string, language: Language = "en"): Promise<{ success: boolean; error?: string }> {
   try {
-    // Supabase에서 삭제
+    // Delete from Supabase
     await api.deleteDiary(id);
     
     revalidatePath("/");
     return { success: true };
   } catch (error) {
-    console.error("일기 삭제 중 오류 발생:", error);
+    console.error("Error during diary deletion:", error);
     return { 
       success: false, 
       error: error instanceof Error ? error.message : t("unknownError", language)

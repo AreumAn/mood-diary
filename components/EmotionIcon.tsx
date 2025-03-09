@@ -1,5 +1,5 @@
 import { Smile, Frown, Angry, Meh, Zap } from "lucide-react"
-import type { Emotion } from "@/lib/types"
+import { Emotion } from "@/lib/types"
 
 interface EmotionIconProps {
   emotion: Emotion
@@ -10,15 +10,15 @@ export function EmotionIcon({ emotion, size = 6 }: EmotionIconProps) {
   const iconClass = `h-${size} w-${size}`
 
   switch (emotion) {
-    case "행복":
+    case "happy":
       return <Smile className={`${iconClass} text-yellow-500`} />
-    case "슬픔":
+    case "sad":
       return <Frown className={`${iconClass} text-blue-500`} />
-    case "분노":
+    case "angry":
       return <Angry className={`${iconClass} text-red-500`} />
-    case "평범":
+    case "neutral":
       return <Meh className={`${iconClass} text-gray-500`} />
-    case "신남":
+    case "excited":
       return <Zap className={`${iconClass} text-green-500`} />
     default:
       return <Meh className={`${iconClass} text-gray-500`} />

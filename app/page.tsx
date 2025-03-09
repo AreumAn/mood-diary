@@ -21,16 +21,16 @@ export default function Home() {
     const loadDiaries = async () => {
       try {
         setIsLoading(true)
-        // Supabase에서 일기 목록 가져오기
+        // Fetch diary list from Supabase
         const diaryDataList = await api.getDiaries()
         
-        // DiaryData를 DiaryEntry로 변환
+        // Convert DiaryData to DiaryEntry
         const diaryEntries = diaryDataList.map(toDiaryEntry)
         
         setDiaries(diaryEntries)
         setError(null)
       } catch (err) {
-        console.error("일기 목록을 불러오는 중 오류 발생:", err)
+        console.error("Error loading diary list:", err)
         setError(t("errorLoadingDiaries", language))
       } finally {
         setIsLoading(false)
