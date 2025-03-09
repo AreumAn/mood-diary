@@ -348,7 +348,6 @@ export function t(key: TranslationKey, language: Language): string {
   return translations[key][language];
 }
 
-// 감정 번역
 export const emotionTranslations: Record<Emotion, { en: string; ko: string }> = {
   "happy": { en: "Happy", ko: "행복" },
   "sad": { en: "Sad", ko: "슬픔" },

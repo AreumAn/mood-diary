@@ -3,7 +3,7 @@
 import type React from "react"
 import Link from "next/link"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import type { DiaryEntry, Emotion, KoreanEmotion, emotionMapping } from "@/lib/types"
+import type { DiaryEntry, Emotion } from "@/lib/types"
 import { formatDate } from "@/lib/utils"
 import { Smile, Frown, Angry, Meh, Zap } from "lucide-react"
 import { useLanguage } from "@/lib/language-provider"
@@ -17,25 +17,10 @@ const emotionConfig: Record<Emotion, { color: string; icon: React.ReactNode }> =
   excited: { color: "bg-green-100 border-green-300", icon: <Zap className="h-5 w-5 text-green-500" /> },
 }
 
-// 한글 감정 값을 영어로 변환하는 함수
+// Function to convert Korean emotion values to English
 const getEmotionKey = (emotion: string | undefined): Emotion | undefined => {
   if (!emotion) return undefined;
-  
-  // 이미 영어 감정 값인 경우
-  if (emotion in emotionConfig) {
-    return emotion as Emotion;
-  }
-  
-  // 한글 감정 값인 경우 변환
-  const koreanEmotions: Record<string, Emotion> = {
-    "행복": "happy",
-    "슬픔": "sad",
-    "분노": "angry",
-    "평범": "neutral",
-    "신남": "excited"
-  };
-  
-  return koreanEmotions[emotion as string] || "neutral";
+  return emotion as Emotion;
 };
 
 interface DiaryCardProps {

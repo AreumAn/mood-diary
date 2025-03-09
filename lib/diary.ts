@@ -2,24 +2,6 @@ import { DiaryEntry, Emotion, KoreanEmotion, emotionMapping } from "./types";
 
 const STORAGE_KEY = "diaries";
 
-// 감정 값 변환 함수
-const convertEmotion = (emotion: string | undefined): Emotion | undefined => {
-  if (!emotion) return undefined;
-  
-  // 이미 영어 감정 값인 경우
-  const validEmotions: Emotion[] = ["happy", "sad", "angry", "neutral", "excited"];
-  if (validEmotions.includes(emotion as Emotion)) {
-    return emotion as Emotion;
-  }
-  
-  // 한글 감정 값인 경우 변환
-  const koreanEmotions = ["행복", "슬픔", "분노", "평범", "신남"];
-  if (koreanEmotions.includes(emotion)) {
-    return emotionMapping[emotion as KoreanEmotion];
-  }
-  
-  return "neutral";
-};
 
 // 데이터 마이그레이션 함수
 const migrateEmotions = () => {
